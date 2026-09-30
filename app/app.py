@@ -7,6 +7,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import GradientBoostingRegressor
+
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATA_PATH = BASE_DIR / 'data' / 'raw' / 'car data.csv'
 MODEL_PATH = BASE_DIR / 'models' / 'best_car_price_model.joblib'
@@ -48,27 +55,83 @@ section[data-testid="stSidebar"] [data-testid="stRadio"] label{border-radius:12p
 
 @st.cache_data
 def load_data():
-    if not DATA_PATH.exists():
-        raise FileNotFoundError(
-            f"Dataset not found: {DATA_PATH}. "
-            "Make sure data/raw/car data.csv is committed to GitHub."
-        )
     data = pd.read_csv(DATA_PATH)
     data = data.copy()
     data['Car_Age'] = int(data['Year'].max()) - data['Year']
     return data
 
 @st.cache_resource
-def load_model():
-    if not MODEL_PATH.exists():
-        raise FileNotFoundError(
-            f"Model not found: {MODEL_PATH}. "
-            "Make sure models/best_car_price_model.joblib is committed to GitHub."
+def train_compatible_model(data):
+    # Rebuild the same Gradient Boosting pipeline used during project training.
+    # This avoids deployment failures when the saved .joblib artifact was
+    # created with incompatible Python / NumPy / scikit-learn versions.
+    train_df = data.drop_duplicates().copy()
+    features = [
+        'Year', 'Present_Price', 'Driven_kms',
+        'Fuel_Type', 'Selling_type', 'Transmission',
+        'Owner', 'Car_Age'
+    ]
+    X = train_df[features]
+    y = train_df['Selling_Price']
+
+    X_train, _, y_train, _ = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+
+    num_features = [
+        'Year', 'Present_Price', 'Driven_kms',
+        'Owner', 'Car_Age'
+    ]
+    cat_features = [
+        'Fuel_Type', 'Selling_type', 'Transmission'
+    ]
+
+    preprocess = ColumnTransformer([
+        (
+            'num',
+            SimpleImputer(strategy='median'),
+            num_features
+        ),
+        (
+            'cat',
+            OneHotEncoder(
+                handle_unknown='ignore',
+                sparse_output=False
+            ),
+            cat_features
         )
-    return joblib.load(MODEL_PATH)
+    ])
+
+    pipeline = Pipeline([
+        ('preprocess', preprocess),
+        (
+            'model',
+            GradientBoostingRegressor(
+                random_state=42,
+                n_estimators=300,
+                max_depth=2,
+                learning_rate=0.04,
+                loss='huber'
+            )
+        )
+    ])
+
+    pipeline.fit(X_train, y_train)
+    return pipeline
+
+
+@st.cache_resource
+def load_model(data):
+    # Prefer the saved artifact. If joblib/pickle compatibility fails,
+    # automatically rebuild the same model from the project's raw dataset.
+    try:
+        return joblib.load(MODEL_PATH)
+    except Exception:
+        return train_compatible_model(data)
+
 
 df = load_data()
-model = load_model()
+model = load_model(df)
 
 
 def plot_theme(fig, height=430):
@@ -258,7 +321,7 @@ def quality():
 
 
 def footer():
-    st.markdown('''<div class="footer">© 2026 <b style="color:#42D99A">Noura Maher Elamin</b> · Used Car Price Intelligence · <a href="https://www.linkedin.com/in/nouramaherelamin/" target="_blank">LinkedIn</a> · <a href="https://github.com/nouramaherelamin" target="_blank">GitHub</a></div>''',unsafe_allow_html=True)
+    st.markdown('''<div class="footer">© 2026 <b style="color:#FFC107">Noura Maher Elamin</b> · Used Car Price Intelligence · <a href="https://www.linkedin.com/in/nouramaherelamin/" target="_blank">LinkedIn</a> · <a href="https://github.com/nouramaherelamin" target="_blank">GitHub</a></div>''',unsafe_allow_html=True)
 
 sidebar()
 x=filtered_data()

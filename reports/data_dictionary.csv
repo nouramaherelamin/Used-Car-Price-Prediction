@@ -1,0 +1,11 @@
+Column,Type,Description,Usage
+Car_Name,Categorical,Vehicle/model name,Reference only; excluded from baseline model
+Year,Integer,Manufacturing year,Model feature
+Selling_Price,Numeric,Observed selling price,Target
+Present_Price,Numeric,Present/reference price,Model feature
+Driven_kms,Integer,Kilometers driven,Model feature
+Fuel_Type,Categorical,Fuel category,Model feature
+Selling_type,Categorical,Dealer or Individual,Model feature
+Transmission,Categorical,Manual or Automatic,Model feature
+Owner,Integer,Previous-owner count,Model feature
+Car_Age,Integer,Derived age relative to max observed year,Engineered model feature

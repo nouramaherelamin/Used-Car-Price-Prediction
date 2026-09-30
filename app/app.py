@@ -159,7 +159,7 @@ def hero():
 
 def sidebar():
     with st.sidebar:
-        st.markdown('# 🚗 Car Price AI')
+        st.markdown('# Car Price AI')
         st.caption('Interactive used-car analytics')
         st.markdown('### Navigation')
         st.radio('Go to', PAGES, key='nav', label_visibility='collapsed')

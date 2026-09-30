@@ -48,6 +48,11 @@ section[data-testid="stSidebar"] [data-testid="stRadio"] label{border-radius:12p
 
 @st.cache_data
 def load_data():
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(
+            f"Dataset not found: {DATA_PATH}. "
+            "Make sure data/raw/car data.csv is committed to GitHub."
+        )
     data = pd.read_csv(DATA_PATH)
     data = data.copy()
     data['Car_Age'] = int(data['Year'].max()) - data['Year']
@@ -55,6 +60,11 @@ def load_data():
 
 @st.cache_resource
 def load_model():
+    if not MODEL_PATH.exists():
+        raise FileNotFoundError(
+            f"Model not found: {MODEL_PATH}. "
+            "Make sure models/best_car_price_model.joblib is committed to GitHub."
+        )
     return joblib.load(MODEL_PATH)
 
 df = load_data()
@@ -248,7 +258,7 @@ def quality():
 
 
 def footer():
-    st.markdown('''<div class="footer">© 2026 <b style="color:#FFC107">Noura Maher Elamin</b> · Used Car Price Intelligence · <a href="https://www.linkedin.com/in/nouramaherelamin/" target="_blank">LinkedIn</a> · <a href="https://github.com/nouramaherelamin" target="_blank">GitHub</a></div>''',unsafe_allow_html=True)
+    st.markdown('''<div class="footer">© 2026 <b style="color:#42D99A">Noura Maher Elamin</b> · Used Car Price Intelligence · <a href="https://www.linkedin.com/in/nouramaherelamin/" target="_blank">LinkedIn</a> · <a href="https://github.com/nouramaherelamin" target="_blank">GitHub</a></div>''',unsafe_allow_html=True)
 
 sidebar()
 x=filtered_data()

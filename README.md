@@ -1,4 +1,4 @@
-# 🚙 Used Car Price Intelligence
+# Used Car Price Intelligence
 
 ### AI-Powered Used Car Price Prediction & Market Analytics
 
@@ -452,9 +452,3 @@ advice.
 > experience.**
 
 Built with Python, Machine Learning, Data Analytics, and Streamlit.
-
-------------------------------------------------------------------------
-
-## 📄 License
-
-This project is intended for educational and portfolio purposes.
